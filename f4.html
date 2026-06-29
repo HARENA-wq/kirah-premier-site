@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Administration | RetroForge Arcade</title>
+  <meta name="description" content="Espace de gestion et administration sécurisé hors-ligne de RetroForge Arcade.">
+  <link rel="stylesheet" href="f2.css">
+  
+  <style>
+    /* Styles pour l'écran de verrouillage d'administration */
+    .login-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(6, 5, 11, 0.95);
+      z-index: 2000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      backdrop-filter: blur(12px);
+      transition: opacity var(--transition-smooth), transform var(--transition-smooth);
+    }
+    
+    .login-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(1.05);
+    }
+    
+    .login-card {
+      width: 100%;
+      max-width: 420px;
+      background: var(--bg-glass);
+      border: 2px solid var(--border-glass-hover);
+      border-radius: var(--border-radius-lg);
+      padding: 3rem 2.5rem;
+      box-shadow: 0 0 40px var(--color-primary-glow);
+      text-align: center;
+      animation: form-entrance 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    @keyframes form-entrance {
+      from { transform: translateY(30px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    
+    .login-logo {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 64px;
+      height: 64px;
+      border-radius: var(--border-radius-sm);
+      background: var(--color-primary-glow);
+      color: white;
+      margin-bottom: 1.5rem;
+      border: 1px solid var(--color-primary);
+    }
+    
+    .login-card h2 {
+      font-family: var(--font-game);
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .login-card p {
+      color: var(--color-text-muted);
+      font-size: 0.9rem;
+      margin-bottom: 2rem;
+    }
+    
+    .login-input {
+      text-align: center;
+      font-size: 1.25rem;
+      letter-spacing: 4px;
+      font-family: var(--font-mono);
+      border-color: var(--border-glass);
+      margin-bottom: 1rem;
+    }
+    
+    .login-input:focus {
+      border-color: var(--color-secondary);
+    }
+    
+    .login-error-msg {
+      color: var(--color-accent);
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      opacity: 0;
+      transition: opacity var(--transition-fast);
+    }
+    
+    .shake {
+      animation: shake 0.4s ease-in-out;
+    }
+    
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-8px); }
+      40%, 80% { transform: translateX(8px); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==========================================
+       LOGIN SECURE OVERLAY SCREEN (100% OFFLINE)
+       ========================================== -->
+  <div class="login-overlay" id="login-overlay">
+    <div class="login-card" id="login-card">
+      <div class="login-logo">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        </svg>
+      </div>
+      <h2>Accès Sécurisé</h2>
+      <p>Entrez le code développeur pour gérer le catalogue de jeux.</p>
+      
+      <form id="login-form">
+        <div class="form-group" style="margin-bottom: 0.5rem;">
+          <input type="password" id="login-password" class="form-control login-input" placeholder="••••" required autocomplete="off">
+        </div>
+        <div class="login-error-msg" id="login-error-msg">Code d'accès incorrect. Veuillez réessayer.</div>
+        
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Déverrouiller</button>
+      </form>
+      
+      <div style="margin-top: 1.5rem; font-size: 0.75rem; color: var(--color-text-muted);">
+        💡 Astuce locale : Le code par défaut est <strong style="color: var(--color-secondary);">admin123</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- Background Canvas for Interactive Micro-particles -->
+  <canvas id="particle-canvas"></canvas>
+
+  <!-- ==========================================
+       NAVIGATION BAR WITH LOGOUT BUTTON
+       ========================================== -->
+  <header class="navbar">
+    <div class="container navbar-container">
+      <a href="f1.html" class="logo" id="brand-logo">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="var(--color-primary)"/>
+          <path d="M2 17L12 22L22 17" stroke="var(--color-secondary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M2 12L17 12L22 12" stroke="var(--color-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>RetroForge<span class="gradient-text">Arcade</span></span>
+      </a>
+
+      <nav aria-label="Menu administration">
+        <ul class="nav-menu">
+          <li><a href="f1.html" class="nav-link">← Retour au Site</a></li>
+          <li><a href="#" class="nav-link active">Console Admin</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <!-- Re-initialize Catalog Button -->
+        <button class="btn btn-secondary btn-sm" id="btn-reset-catalog" title="Restaurer tous les jeux natifs">
+          Réinitialiser
+        </button>
+
+        <button class="theme-toggle-btn" id="theme-toggle-btn" aria-label="Changer de thème">
+          <svg id="theme-icon" viewBox="0 0 24 24">
+            <path d="M12 3c.132 0 .263 0 .393.007a7.5 7.5 0 0 0 7.92 12.446A9 9 0 1 1 12 3z"/>
+          </svg>
+        </button>
+
+        <!-- Logout Button -->
+        <button class="btn btn-accent btn-sm" id="btn-logout" title="Se déconnecter" style="padding: 0.6rem 1rem;">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+          Déconnexion
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==========================================
+       HERO BANNER
+       ========================================== -->
+  <section class="hero" style="padding: 4rem 0 2rem;">
+    <div class="container hero-wrapper">
+      <div class="open-source-badge" style="border-color: var(--color-secondary); background: var(--color-secondary-glow);">Panneau d'administration</div>
+      <h1>Contrôlez le <span class="gradient-text">Catalogue de Jeux</span></h1>
+      <p>Configurez la borne d'arcade de A à Z. Ajoutez vos propres créations en JavaScript local ou supprimez n'importe quel jeu existant (y compris les jeux par défaut de la plateforme).</p>
+    </div>
+  </section>
+
+  <!-- ==========================================
+       ADMIN GRID & FORM
+       ========================================== -->
+  <main class="container">
+    <div class="admin-grid">
+      
+      <!-- Left Column: Add Game Form -->
+      <section class="admin-form-box">
+        <h2 style="font-family: var(--font-game); font-size: 1.8rem; margin-bottom: 1.5rem;" class="gradient-text">Ajouter un Jeu</h2>
+        
+        <form id="add-game-form">
+          <div class="form-group">
+            <label for="game-name">Nom du Jeu vidéo</label>
+            <input type="text" id="game-name" class="form-control" placeholder="Ex: Cyber Void, Pixel Clicker..." required>
+          </div>
+
+          <div class="form-group">
+            <label for="game-category">Genre du Jeu</label>
+            <select id="game-category" class="form-control" style="background: rgba(0,0,0,0.6);" required>
+              <option value="arcade">Arcade (Grille / Action)</option>
+              <option value="tir">Tir Spatial (Scrolling / Combat)</option>
+              <option value="puzzle">Réflexion (Logique / Simon)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="game-desc">Description du Jeu <span>(150 caractères max)</span></label>
+            <textarea id="game-desc" class="form-control" rows="3" placeholder="Présentation courte et captivante..." required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Déposer votre script de jeu <span>(.js, .txt)</span></label>
+            <div class="file-drag-zone" id="file-drag-zone">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+              </svg>
+              <p style="font-size: 0.9rem; font-weight: 600;">Glissez-déposez le code ici ou cliquez pour parcourir</p>
+              <span style="font-size: 0.75rem; color: var(--color-text-muted);">Compatible avec l'API de canvas RetroForge</span>
+              <input type="file" id="file-input" class="hidden-file-input" accept=".js,.txt">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="game-code">Éditeur de code JavaScript <span>(Exécution Canvas 60 FPS)</span></label>
+            <textarea id="game-code" class="form-control code-editor" required></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;" id="btn-submit-game">
+            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Injecter le Jeu dans le Catalogue
+          </button>
+        </form>
+      </section>
+
+      <!-- Right Column: Unified Game Manager (Built-in + Custom Games) -->
+      <section class="admin-list-box">
+        <div class="admin-list-header">
+          <h3>Jeux Actifs</h3>
+          <span class="open-source-badge" id="custom-games-count" style="margin-bottom: 0;">0 jeux</span>
+        </div>
+        
+        <div class="installed-list" id="custom-games-list">
+          <!-- Populated dynamically via JS -->
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-container">
+      <div class="footer-copy">
+        <span>&copy; 2026 RetroForge Arcade. Console Développeur Sécurisée.</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==========================================
+       ADMIN JAVASCRIPT MECHANICS
+       ========================================== -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      
+      // Moteur audio local pour l'admin
+      const LocalAudio = {
+        ctx: null,
+        init() {
+          if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        },
+        playClick() {
+          this.init();
+          if (this.ctx.state === "suspended") this.ctx.resume();
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = "sine";
+          osc.frequency.setValueAtTime(450, this.ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(900, this.ctx.currentTime + 0.08);
+          gain.gain.setValueAtTime(0.08, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.08);
+          osc.connect(gain); gain.connect(this.ctx.destination);
+          osc.start(); osc.stop(this.ctx.currentTime + 0.08);
+        },
+        playSuccess() {
+          this.init();
+          const notes = [261.63, 329.63, 392.00, 523.25];
+          notes.forEach((freq, idx) => {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = "sine";
+            osc.frequency.setValueAtTime(freq, this.ctx.currentTime + idx * 0.06);
+            gain.gain.setValueAtTime(0.08, this.ctx.currentTime + idx * 0.06);
+            gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + idx * 0.06 + 0.25);
+            osc.connect(gain); gain.connect(this.ctx.destination);
+            osc.start(this.ctx.currentTime + idx * 0.06);
+            osc.stop(this.ctx.currentTime + idx * 0.06 + 0.25);
+          });
+        },
+        playError() {
+          this.init();
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = "sawtooth";
+          osc.frequency.setValueAtTime(150, this.ctx.currentTime);
+          osc.frequency.linearRampToValueAtTime(80, this.ctx.currentTime + 0.3);
+          gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.3);
+          osc.connect(gain); gain.connect(this.ctx.destination);
+          osc.start(); osc.stop(this.ctx.currentTime + 0.3);
+        }
+      };
+
+      // ==========================================
+      // SECURITY & PASSWORD AUTH OVERLAY SYSTEM
+      // ==========================================
+      const loginOverlay = document.getElementById("login-overlay");
+      const loginCard = document.getElementById("login-card");
+      const loginForm = document.getElementById("login-form");
+      const loginPassword = document.getElementById("login-password");
+      const loginErrorMsg = document.getElementById("login-error-msg");
+      const btnLogout = document.getElementById("btn-logout");
+
+      // Vérifier si le code est déjà validé en session locale
+      if (sessionStorage.getItem("rf-admin-logged-in") === "true") {
+        loginOverlay.classList.add("hidden");
+      }
+
+      loginForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const code = loginPassword.value.trim();
+
+        // Mot de passe sécurisé en offline
+        if (code === "admin123") {
+          sessionStorage.setItem("rf-admin-logged-in", "true");
+          loginErrorMsg.style.opacity = 0;
+          loginPassword.value = "";
+          
+          // Animation de réussite
+          LocalAudio.playSuccess();
+          loginOverlay.classList.add("hidden");
+        } else {
+          // Échec de déverrouillage
+          LocalAudio.playError();
+          loginCard.classList.add("shake");
+          loginErrorMsg.style.opacity = 1;
+          loginPassword.value = "";
+          
+          setTimeout(() => {
+            loginCard.classList.remove("shake");
+          }, 400);
+        }
+      });
+
+      // Déconnexion de l'administration
+      btnLogout.addEventListener("click", () => {
+        sessionStorage.setItem("rf-admin-logged-in", "false");
+        loginOverlay.classList.remove("hidden");
+        LocalAudio.playError();
+      });
+
+
+      // ==========================================
+      // GESTION DU THÈME
+      // ==========================================
+      const themeToggleBtn = document.getElementById("theme-toggle-btn");
+      const themeIcon = document.getElementById("theme-icon");
+      const currentTheme = localStorage.getItem("retroforge-theme") || "dark";
+      document.documentElement.setAttribute("data-theme", currentTheme);
+      updateThemeIcon(currentTheme);
+
+      themeToggleBtn.addEventListener("click", () => {
+        const theme = document.documentElement.getAttribute("data-theme");
+        const newTheme = theme === "dark" ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", newTheme);
+        localStorage.setItem("retroforge-theme", newTheme);
+        updateThemeIcon(newTheme);
+        LocalAudio.playClick();
+      });
+
+      function updateThemeIcon(theme) {
+        if (theme === "light") {
+          themeIcon.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+            </svg>
+          `;
+        } else {
+          themeIcon.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3c.132 0 .263 0 .393.007a7.5 7.5 0 0 0 7.92 12.446A9 9 0 1 1 12 3z"/></svg>`;
+        }
+      }
+
+      // ==========================================
+      // CODE TEMPLATE PAR DÉFAUT
+      // ==========================================
+      const defaultGameTemplate = `/* ===================================================
+   TEMPLATE DE JEU ARCADE RETROFORGE
+   Un jeu de clic spatial fluorescent interactif
+   =================================================== */
+
+// Initialisation globale
+let targetX = canvas.width / 2;
+let targetY = canvas.height / 2;
+let targetSize = 25;
+let speedX = 3;
+let speedY = 2;
+
+// Cette fonction est appelée une seule fois au boot du jeu
+function init() {
+  gameScore = 0;
+  gameLives = 3;
+  targetX = canvas.width / 2;
+  targetY = canvas.height / 2;
+  speedX = 3;
+  speedY = 2.5;
+}
+
+// Cette fonction tourne en continu à 60 FPS pour la physique
+function update() {
+  targetX += speedX;
+  targetY += speedY;
+
+  if (targetX < targetSize || targetX > canvas.width - targetSize) {
+    speedX = -speedX;
+    RetroSynth.playNote(220, 0.05);
+  }
+  if (targetY < targetSize || targetY > canvas.height - targetSize) {
+    speedY = -speedY;
+    RetroSynth.playNote(220, 0.05);
+  }
+
+  if (keys["Space"] || keys["click"]) {
+    let mouseX = keys["mouseX"] || 0;
+    let mouseY = keys["mouseY"] || 0;
+    
+    let dist = Math.sqrt((mouseX - targetX)**2 + (mouseY - targetY)**2);
+    if (dist < targetSize + 15) {
+      gameScore += 10;
+      targetX = Math.random() * (canvas.width - 60) + 30;
+      targetY = Math.random() * (canvas.height - 60) + 30;
+      speedX *= 1.05;
+      speedY *= 1.05;
+      RetroSynth.playPoint();
+    } else {
+      gameLives--;
+      RetroSynth.playDefeat();
+      if (gameLives <= 0) {
+        gameOver();
+      }
+    }
+    keys["Space"] = false;
+    keys["click"] = false;
+  }
+}
+
+// Cette fonction tourne en continu pour le dessin
+function draw() {
+  ctx.fillStyle = "#030206";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.strokeStyle = "rgba(6, 182, 212, 0.05)";
+  ctx.lineWidth = 1;
+  for(let i=0; i<canvas.width; i+=40) {
+    ctx.strokeRect(i, 0, 40, canvas.height);
+  }
+
+  ctx.shadowBlur = 20;
+  ctx.shadowColor = "var(--color-secondary)";
+  ctx.fillStyle = "var(--color-secondary)";
+  ctx.beginPath();
+  ctx.arc(targetX, targetY, targetSize, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = "#ffffff";
+  ctx.beginPath();
+  ctx.arc(targetX - 4, targetY - 4, targetSize/3, 0, Math.PI * 2);
+  ctx.fill();
+  
+  ctx.shadowBlur = 0;
+}
+`;
+
+      const codeEditor = document.getElementById("game-code");
+      codeEditor.value = defaultGameTemplate;
+
+      // Drag & Drop des scripts
+      const dragZone = document.getElementById("file-drag-zone");
+      const fileInput = document.getElementById("file-input");
+
+      dragZone.addEventListener("click", () => fileInput.click());
+
+      fileInput.addEventListener("change", (e) => {
+        handleFileSelect(e.target.files[0]);
+      });
+
+      dragZone.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        dragZone.classList.add("dragover");
+      });
+
+      dragZone.addEventListener("dragleave", () => {
+        dragZone.classList.remove("dragover");
+      });
+
+      dragZone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        dragZone.classList.remove("dragover");
+        handleFileSelect(e.dataTransfer.files[0]);
+      });
+
+      function handleFileSelect(file) {
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          codeEditor.value = e.target.result;
+          LocalAudio.playSuccess();
+          alert(`Script "${file.name}" importé avec succès dans l'éditeur de code !`);
+        };
+        reader.readAsText(file);
+      }
+
+      // ==========================================
+      // GESTION UNIFIÉE DES JEUX (AJOUT ET SUPPRESSION ENTIÈRE)
+      // ==========================================
+      const customGamesList = document.getElementById("custom-games-list");
+      const customGamesCount = document.getElementById("custom-games-count");
+      const btnResetCatalog = document.getElementById("btn-reset-catalog");
+
+      function getCatalogGames() {
+        const customGames = JSON.parse(localStorage.getItem("rf-custom-games")) || [];
+        const deletedDefaults = JSON.parse(localStorage.getItem("rf-deleted-defaults")) || [];
+
+        // Rapatrier la liste des jeux par défaut
+        const defaults = [
+          { id: "snake", name: "Neon Snake", category: "arcade", isDefault: true },
+          { id: "shooter", name: "Space Ranger", category: "tir", isDefault: true },
+          { id: "puzzle", name: "Memory Matrix", category: "puzzle", isDefault: true }
+        ];
+
+        // Filtrer les jeux par défaut supprimés
+        const visibleDefaults = defaults.filter(game => !deletedDefaults.includes(game.id));
+        return {
+          all: [...visibleDefaults, ...customGames],
+          customs: customGames,
+          deletedDefaults: deletedDefaults
+        };
+      }
+
+      function updateCatalogUI() {
+        customGamesList.innerHTML = "";
+        const catalog = getCatalogGames();
+        
+        customGamesCount.textContent = `${catalog.all.length} jeu${catalog.all.length > 1 ? 'x' : ''} actif${catalog.all.length > 1 ? 's' : ''}`;
+
+        if (catalog.all.length === 0) {
+          customGamesList.innerHTML = `
+            <div style="text-align: center; padding: 2.5rem; color: var(--color-text-muted);">
+              Le catalogue est entièrement vide ! Veuillez ajouter un nouveau jeu ou réinitialiser le catalogue.
+            </div>
+          `;
+          return;
+        }
+
+        catalog.all.forEach((game) => {
+          const item = document.createElement("div");
+          item.className = "admin-card";
+          
+          let tagColor = "var(--color-primary)";
+          if (game.category === "tir") tagColor = "var(--color-secondary)";
+          if (game.category === "puzzle") tagColor = "var(--color-accent)";
+
+          const badgeText = game.isDefault ? "Natif" : "Custom";
+          const badgeClass = game.isDefault ? "style='border-color: var(--color-success); color: var(--color-success);'" : "style='border-color: var(--color-primary); color: var(--color-primary);'";
+
+          item.innerHTML = `
+            <div class="admin-card-info">
+              <div class="admin-card-icon" style="color: ${tagColor};">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2z"/>
+                </svg>
+              </div>
+              <div>
+                <div class="admin-card-title">${game.name}</div>
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                  <span class="admin-card-category">${game.category}</span>
+                  <span class="open-source-badge" ${badgeClass} style="font-size: 0.65rem; padding: 0.1rem 0.4rem; margin-bottom: 0;">${badgeText}</span>
+                </div>
+              </div>
+            </div>
+            
+            <button class="delete-btn" data-id="${game.id}" data-default="${game.isDefault ? 'true' : 'false'}" aria-label="Supprimer ${game.name}">
+              <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </button>
+          `;
+          customGamesList.appendChild(item);
+        });
+
+        // Relier les suppressions
+        customGamesList.querySelectorAll(".delete-btn").forEach(btn => {
+          btn.addEventListener("click", () => {
+            const gameId = btn.getAttribute("data-id");
+            const isDefault = btn.getAttribute("data-default") === "true";
+            
+            if (confirm(`Voulez-vous vraiment désactiver ou supprimer le jeu sélectionné ?`)) {
+              if (isDefault) {
+                // Masquer le jeu natif
+                const deletedDefaults = JSON.parse(localStorage.getItem("rf-deleted-defaults")) || [];
+                deletedDefaults.push(gameId);
+                localStorage.setItem("rf-deleted-defaults", JSON.stringify(deletedDefaults));
+              } else {
+                // Supprimer définitivement le jeu injecté
+                let customGames = JSON.parse(localStorage.getItem("rf-custom-games")) || [];
+                customGames = customGames.filter(g => g.id !== gameId);
+                localStorage.setItem("rf-custom-games", JSON.stringify(customGames));
+              }
+              
+              updateCatalogUI();
+              LocalAudio.playClick();
+            }
+          });
+        });
+      }
+
+      // Traiter la création
+      const form = document.getElementById("add-game-form");
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        const customGames = JSON.parse(localStorage.getItem("rf-custom-games")) || [];
+        const newGame = {
+          id: "custom_" + Date.now(),
+          name: document.getElementById("game-name").value.trim(),
+          category: document.getElementById("game-category").value,
+          description: document.getElementById("game-desc").value.trim(),
+          code: codeEditor.value,
+          isDefault: false
+        };
+
+        customGames.push(newGame);
+        localStorage.setItem("rf-custom-games", JSON.stringify(customGames));
+        
+        // Reset du formulaire
+        document.getElementById("game-name").value = "";
+        document.getElementById("game-desc").value = "";
+        codeEditor.value = defaultGameTemplate;
+
+        updateCatalogUI();
+        LocalAudio.playSuccess();
+        alert(`Le jeu "${newGame.name}" a été ajouté avec succès au catalogue RetroForge !`);
+      });
+
+      // Restaurer tous les jeux natifs
+      btnResetCatalog.addEventListener("click", () => {
+        if (confirm("Voulez-vous restaurer tous les jeux par défaut (Neon Snake, Space Ranger, etc.) ? Vos jeux personnalisés ne seront pas affectés.")) {
+          localStorage.removeItem("rf-deleted-defaults");
+          updateCatalogUI();
+          LocalAudio.playSuccess();
+        }
+      });
+
+      // Lancement
+      updateCatalogUI();
+
+      // Particules d'arrière plan
+      const particleCanvas = document.getElementById("particle-canvas");
+      const pCtx = particleCanvas.getContext("2d");
+      let particlesArray = [];
+
+      function resize() {
+        particleCanvas.width = window.innerWidth;
+        particleCanvas.height = window.innerHeight;
+      }
+      window.addEventListener("resize", resize);
+      resize();
+
+      class Particle {
+        constructor() {
+          this.x = Math.random() * particleCanvas.width;
+          this.y = Math.random() * particleCanvas.height;
+          this.size = Math.random() * 2 + 0.5;
+          this.speedX = Math.random() * 0.4 - 0.2;
+          this.speedY = Math.random() * 0.4 - 0.2;
+        }
+        update() {
+          this.x += this.speedX; this.y += this.speedY;
+          if (this.x > particleCanvas.width) this.x = 0;
+          if (this.x < 0) this.x = particleCanvas.width;
+          if (this.y > particleCanvas.height) this.y = 0;
+          if (this.y < 0) this.y = particleCanvas.height;
+        }
+        draw() {
+          pCtx.fillStyle = 'rgba(139, 92, 246, 0.15)';
+          pCtx.beginPath(); pCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2); pCtx.fill();
+        }
+      }
+
+      function initParticles() {
+        for (let i = 0; i < 40; i++) particlesArray.push(new Particle());
+      }
+
+      function animate() {
+        pCtx.clearRect(0,0,particleCanvas.width,particleCanvas.height);
+        particlesArray.forEach(p => { p.update(); p.draw(); });
+        requestAnimationFrame(animate);
+      }
+      initParticles(); animate();
+    });
+  </script>
+</body>
+</html>

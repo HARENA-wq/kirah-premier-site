@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RetroForge Arcade | Plateforme de Jeux Vidéo Open-Source & Rétro</title>
+  
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="Découvrez RetroForge Arcade, une plateforme open-source de jeux rétro en HTML5. Jouez à des jeux néons, évaluez-les, aimez-les et téléchargez-les instantanément pour y jouer hors-ligne.">
+  <meta name="keywords" content="jeux vidéo, open source, html5, retro, snake, shooter, arcade, local storage, hors ligne, téléchargement direct">
+  <meta name="author" content="RetroForge Community">
+  
+  <!-- CSS Stylesheet Link -->
+  <link rel="stylesheet" href="f2.css">
+</head>
+<body>
+
+  <!-- Background Canvas for Interactive Micro-particles -->
+  <canvas id="particle-canvas"></canvas>
+
+  <!-- ==========================================
+       NAVIGATION BAR
+       ========================================== -->
+  <header class="navbar" id="main-header">
+    <div class="container navbar-container">
+      <a href="#" class="logo" id="brand-logo" aria-label="RetroForge Accueil">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="var(--color-primary)"/>
+          <path d="M2 17L12 22L22 17" stroke="var(--color-secondary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M2 12L12 17L22 12" stroke="var(--color-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>RetroForge<span class="gradient-text">Arcade</span></span>
+      </a>
+
+      <nav aria-label="Menu principal">
+        <ul class="nav-menu" id="nav-links">
+          <li><a href="#" class="nav-link active" id="menu-home">Accueil</a></li>
+          <li><a href="#games-gallery" class="nav-link" id="menu-games">Jeux</a></li>
+          <li><a href="#library-dashboard" class="nav-link" id="menu-library">Mon Stockage</a></li>
+          <li><a href="#opensource" class="nav-link" id="menu-open">Open Source</a></li>
+          <li><a href="f4.html" class="nav-link" id="menu-admin" style="color: var(--color-accent); font-weight: 700;">Admin</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <!-- Interactive Theme Switcher -->
+        <button class="theme-toggle-btn" id="theme-toggle-btn" aria-label="Changer de thème (Sombre/Lumineux)" title="Changer de thème">
+          <!-- Moon Icon (Dark Mode active by default) -->
+          <svg id="theme-icon" viewBox="0 0 24 24">
+            <path d="M12 3c.132 0 .263 0 .393.007a7.5 7.5 0 0 0 7.92 12.446A9 9 0 1 1 12 3z"/>
+          </svg>
+        </button>
+
+        <a href="#opensource" class="btn btn-secondary btn-sm" id="btn-star-git">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style="margin-right: 4px;">
+            <path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.75.75 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25zm0 2.445L6.615 5.5a.75.75 0 0 1-.564.41l-3.097.45 2.24 2.184a.75.75 0 0 1 .216.664l-.528 3.084 2.769-1.456a.75.75 0 0 1 .698 0l2.77 1.456-.53-3.084a.75.75 0 0 1 .216-.664l2.24-2.183-3.096-.45a.75.75 0 0 1-.564-.41L8 2.695z"/>
+          </svg>
+          Star sur GitHub
+        </a>
+
+        <button class="hamburger" id="mobile-menu-btn" aria-label="Ouvrir le menu mobile">
+          ☰
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==========================================
+       HERO BILLBOARD SECTION
+       ========================================== -->
+  <section class="hero" id="hero-banner">
+    <div class="container hero-wrapper">
+      <div class="open-source-badge" id="os-badge">Plateforme 100% Libre &amp; Hors-ligne</div>
+      <h1>Propulsez Votre Divertissement en <span class="gradient-text">Mode Open-Source</span></h1>
+      <p>Une collection exclusive de jeux rétro HTML5 d'une fluidité légendaire. Téléchargez vos jeux directement dans votre espace de stockage local sous forme de fichiers autonomes exécutables sans aucune connexion internet requise.</p>
+      
+      <!-- Interactive Search and Filters -->
+      <div class="search-filter-box">
+        <div class="search-input-wrapper">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input type="text" class="search-input" id="search-input" placeholder="Rechercher un jeu vidéo par son nom..." aria-label="Recherche de jeux">
+        </div>
+        
+        <div class="category-filters" id="genre-filters">
+          <button class="filter-chip active" data-category="all" id="filter-all">Tous les jeux</button>
+          <button class="filter-chip" data-category="arcade" id="filter-arcade">Arcade</button>
+          <button class="filter-chip" data-category="tir" id="filter-tir">Tir Spatial</button>
+          <button class="filter-chip" data-category="puzzle" id="filter-puzzle">Réflexion</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================
+       MAIN GAMES GALLERY
+       ========================================== -->
+  <main class="container games-section" id="games-gallery">
+    <div class="section-header">
+      <div>
+        <h2>Notre Borne de Jeux</h2>
+        <p style="color: var(--color-text-muted); margin-top: 0.25rem;">Cliquez pour jouer instantanément ou téléchargez le code source complet.</p>
+      </div>
+    </div>
+
+    <!-- Games Cards Grid -->
+    <div class="games-grid" id="games-grid">
+      
+      <!-- GAME CARD 1: NEON SNAKE -->
+      <article class="game-card" data-genre="arcade" id="card-snake">
+        <span class="game-tag">Arcade</span>
+        <div class="game-visual" style="background-image: radial-gradient(circle, rgba(139, 92, 246, 0.2) 0%, rgba(10, 8, 19, 0.8) 100%);">
+          <!-- Custom Vector Art representing Cyber Snake -->
+          <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="20" y="20" width="16" height="16" rx="4" fill="var(--color-primary)" filter="drop-shadow(0 0 6px var(--color-primary-glow))" />
+            <rect x="38" y="20" width="16" height="16" rx="4" fill="var(--color-primary)" />
+            <rect x="56" y="20" width="16" height="16" rx="4" fill="var(--color-primary)" />
+            <rect x="56" y="38" width="16" height="16" rx="4" fill="var(--color-primary)" />
+            <rect x="56" y="56" width="16" height="16" rx="4" fill="var(--color-secondary)" filter="drop-shadow(0 0 8px var(--color-secondary-glow))" />
+            <!-- Glowing apple -->
+            <circle cx="28" cy="64" r="7" fill="var(--color-accent)" filter="drop-shadow(0 0 10px var(--color-accent))" />
+          </svg>
+        </div>
+        <div class="game-info">
+          <h3>Neon Snake</h3>
+          <p class="game-description">Le grand classique rétro modernisé ! Dirigez un serpent d'énergie lumineuse à travers une arène cyberpunk. Gobez des batteries quantiques pour grandir et battez votre record personnel.</p>
+          
+          <!-- Rating and Evaluation system -->
+          <div class="evaluation-row">
+            <div class="rating-interactive" data-game-id="snake">
+              <span class="star-icon" data-value="1" aria-label="1 étoile">&#9733;</span>
+              <span class="star-icon" data-value="2" aria-label="2 étoiles">&#9733;</span>
+              <span class="star-icon" data-value="3" aria-label="3 étoiles">&#9733;</span>
+              <span class="star-icon" data-value="4" aria-label="4 étoiles">&#9733;</span>
+              <span class="star-icon" data-value="5" aria-label="5 étoiles">&#9733;</span>
+              <span class="rating-count" id="rating-count-snake">(0 votes)</span>
+            </div>
+            
+            <button class="like-btn" id="like-btn-snake" data-game-id="snake" aria-label="Aimer Neon Snake">
+              <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+              <span class="like-counter" id="like-count-snake">28</span>
+            </button>
+          </div>
+          
+          <div class="game-footer-actions">
+            <button class="btn btn-primary play-game-btn" data-game="snake" id="btn-play-snake">Jouer</button>
+            <button class="btn btn-secondary download-game-btn" data-game="snake" id="btn-down-snake">Télécharger</button>
+          </div>
+        </div>
+      </article>
+
+      <!-- GAME CARD 2: SPACE RANGER -->
+      <article class="game-card" data-genre="tir" id="card-shooter">
+        <span class="game-tag">Tir Spatial</span>
+        <div class="game-visual" style="background-image: radial-gradient(circle, rgba(6, 182, 212, 0.2) 0%, rgba(10, 8, 19, 0.8) 100%);">
+          <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Rocket graphics -->
+            <path d="M50 15L65 45H35L50 15Z" fill="var(--color-secondary)" filter="drop-shadow(0 0 10px var(--color-secondary-glow))" />
+            <path d="M40 45H60V65H40V45Z" fill="var(--color-primary)" />
+            <!-- Reactor flame -->
+            <path d="M45 65L50 85L55 65H45Z" fill="var(--color-accent)" filter="drop-shadow(0 0 12px var(--color-accent-glow))" />
+            <!-- Star background dots -->
+            <circle cx="20" cy="30" r="2" fill="white" opacity="0.8"/>
+            <circle cx="80" cy="50" r="1" fill="white" opacity="0.5"/>
+            <circle cx="75" cy="20" r="3" fill="var(--color-secondary-glow)"/>
+          </svg>
+        </div>
+        <div class="game-info">
+          <h3>Space Ranger</h3>
+          <p class="game-description">Prenez le contrôle d'un vaisseau d'élite de la fédération et détruisez les nuées d'astéroïdes et d'éclaireurs extraterrestres. Récupérez de la puissance et survivez à la frénésie spatiale.</p>
+          
+          <div class="evaluation-row">
+            <div class="rating-interactive" data-game-id="shooter">
+              <span class="star-icon" data-value="1" aria-label="1 étoile">&#9733;</span>
+              <span class="star-icon" data-value="2" aria-label="2 étoiles">&#9733;</span>
+              <span class="star-icon" data-value="3" aria-label="3 étoiles">&#9733;</span>
+              <span class="star-icon" data-value="4" aria-label="4 étoiles">&#9733;</span>
+              <span class="star-icon" data-value="5" aria-label="5 étoiles">&#9733;</span>
+              <span class="rating-count" id="rating-count-shooter">(0 votes)</span>
+            </div>
+            
+            <button class="like-btn" id="like-btn-shooter" data-game-id="shooter" aria-label="Aimer Space Ranger">
+              <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+              <span class="like-counter" id="like-count-shooter">42</span>
+            </button>
+          </div>
+          
+          <div class="game-footer-actions">
+            <button class="btn btn-primary play-game-btn" data-game="shooter" id="btn-play-shooter">Jouer</button>
+            <button class="btn btn-secondary download-game-btn" data-game="shooter" id="btn-down-shooter">Télécharger</button>
+          </div>
+        </div>
+      </article>
+
+      <!-- GAME CARD 3: MEMORY MATRIX -->
+      <article class="game-card" data-genre="puzzle" id="card-puzzle">
+        <span class="game-tag">Réflexion</span>
+        <div class="game-visual" style="background-image: radial-gradient(circle, rgba(244, 63, 94, 0.2) 0%, rgba(10, 8, 19, 0.8) 100%);">
+          <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Grid of beautiful lock nodes -->
+            <rect x="15" y="15" width="30" height="30" rx="6" fill="#1b1635" stroke="var(--color-accent)" stroke-width="2" filter="drop-shadow(0 0 6px rgba(244, 63, 94, 0.3))"/>
+            <rect x="55" y="15" width="30" height="30" rx="6" fill="var(--color-primary)" stroke="var(--color-primary)" stroke-width="2" filter="drop-shadow(0 0 8px var(--color-primary-glow))"/>
+            <rect x="15" y="55" width="30" height="30" rx="6" fill="var(--color-secondary)" stroke="var(--color-secondary)" stroke-width="2" filter="drop-shadow(0 0 8px var(--color-secondary-glow))"/>
+            <rect x="55" y="55" width="30" height="30" rx="6" fill="#1b1635" stroke="var(--color-accent)" stroke-width="2" />
+            <!-- Hologram line connecting them -->
+            <line x1="30" y1="30" x2="70" y2="30" stroke="white" stroke-width="2" stroke-dasharray="4 2" />
+            <line x1="30" y1="70" x2="70" y2="30" stroke="white" stroke-width="1" />
+          </svg>
+        </div>
+        <div class="game-info">
+          <h3>Memory Matrix</h3>
+          <p class="game-description">Activez les modules de stockage en synchronisant la matrice cybernétique de la grille. Reproduisez des séquences lumineuses et sonores uniques. Stimulez votre concentration cérébrale.</p>
+          
+          <div class="evaluation-row">
+            <div class="rating-interactive" data-game-id="puzzle">
+              <span class="star-icon" data-value="1" aria-label="1 étoile">&#9733;</span>
+              <span class="star-icon" data-value="2" aria-label="2 étoiles">&#9733;</span>
+              <span class="star-icon" data-value="3" aria-label="3 étoiles">&#9733;</span>
+              <span class="star-icon" data-value="4" aria-label="4 étoiles">&#9733;</span>
+              <span class="star-icon" data-value="5" aria-label="5 étoiles">&#9733;</span>
+              <span class="rating-count" id="rating-count-puzzle">(0 votes)</span>
+            </div>
+            
+            <button class="like-btn" id="like-btn-puzzle" data-game-id="puzzle" aria-label="Aimer Memory Matrix">
+              <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+              <span class="like-counter" id="like-count-puzzle">19</span>
+            </button>
+          </div>
+          
+          <div class="game-footer-actions">
+            <button class="btn btn-primary play-game-btn" data-game="puzzle" id="btn-play-puzzle">Jouer</button>
+            <button class="btn btn-secondary download-game-btn" data-game="puzzle" id="btn-down-puzzle">Télécharger</button>
+          </div>
+        </div>
+      </article>
+
+    </div>
+  </main>
+
+  <!-- ==========================================
+       RETRO GAME CONSOLE CABINET MODAL (CRT SCREEN)
+       ========================================== -->
+  <div class="arcade-modal" id="arcade-modal" role="dialog" aria-modal="true" aria-labelledby="modal-game-title">
+    <div class="arcade-cabinet">
+      <!-- Cabinet Marquee Top -->
+      <div class="cabinet-header">
+        <div class="cabinet-title-row">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="filter: drop-shadow(0 0 4px white);">
+            <path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 3c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm3-3c-.83 0-1.5-.67-1.5-1.5S18.67 9 19.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z" fill="white"/>
+          </svg>
+          <span class="cabinet-title" id="modal-game-title">Jeu en cours</span>
+        </div>
+        <button class="modal-close-btn" id="modal-close-btn" aria-label="Fermer la console">✕</button>
+      </div>
+
+      <!-- Play Screen with Vintage CRT Filter and Scanlines -->
+      <div class="screen-area">
+        <div class="canvas-wrapper">
+          <canvas id="game-canvas"></canvas>
+          <div class="crt-overlay"></div>
+          <div class="crt-scanlines"></div>
+        </div>
+        
+        <div class="screen-hud">
+          <div class="hud-score">SCORE : <span id="hud-score-val">0</span></div>
+          <div class="hud-lives" id="hud-lives-container">VIES : <span id="hud-lives-val">3</span></div>
+        </div>
+
+        <!-- Virtual Mobile Controllers (D-Pad) -->
+        <div class="virtual-gamepad" id="virtual-gamepad">
+          <button class="pad-btn pad-up" id="pad-up" aria-label="Haut">▲</button>
+          <button class="pad-btn pad-left" id="pad-left" aria-label="Gauche">◀</button>
+          <button class="pad-btn pad-shoot" id="pad-action" aria-label="Tirer / Confirmer">🔫</button>
+          <button class="pad-btn pad-right" id="pad-right" aria-label="Droite">▶</button>
+          <button class="pad-btn pad-down" id="pad-down" aria-label="Bas">▼</button>
+        </div>
+      </div>
+
+      <!-- Control Sidebar and Instructions -->
+      <div class="controls-sidebar">
+        <div class="controls-section">
+          <h4>Instructions de Jeu</h4>
+          <div class="key-layout" id="game-instructions">
+            <!-- Populated dynamically via JS per game type -->
+          </div>
+        </div>
+
+        <div class="controls-section">
+          <h4>Effets &amp; Audio</h4>
+          <div class="audio-panel">
+            <span>Sons 8-Bit Rétro (Web Audio)</span>
+            <label class="switch" id="audio-toggle-wrapper">
+              <input type="checkbox" id="sound-toggle" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="controls-section" style="margin-top: auto;">
+          <button class="btn btn-accent" id="restart-game-btn" style="width: 100%;">
+            <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18" />
+            </svg>
+            Recommencer
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       USER PERSONAL DASHBOARD / LIBRARY STORAGE
+       ========================================== -->
+  <section class="library-section" id="library-dashboard">
+    <div class="container">
+      <div class="section-header">
+        <div>
+          <h2>Mon Stockage Local</h2>
+          <p style="color: var(--color-text-muted); margin-top: 0.25rem;">Consultez vos jeux téléchargés directement dans la mémoire de votre navigateur.</p>
+        </div>
+      </div>
+
+      <!-- Statistical grid -->
+      <div class="dashboard-summary">
+        <div class="stat-card" id="stat-downloaded">
+          <div class="stat-icon-wrapper" style="background: linear-gradient(135deg, var(--color-success), #059669);">
+            <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+          </div>
+          <div class="stat-info">
+            <h4>Jeux Hors-ligne</h4>
+            <div class="stat-value" id="stats-downloaded-count">0 / 3</div>
+          </div>
+        </div>
+
+        <div class="stat-card" id="stat-favorites">
+          <div class="stat-icon-wrapper" style="background: linear-gradient(135deg, var(--color-accent), #e11d48);">
+            <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+          </div>
+          <div class="stat-info">
+            <h4>Coups de Cœur</h4>
+            <div class="stat-value" id="stats-likes-count">0</div>
+          </div>
+        </div>
+
+        <div class="stat-card" id="stat-highscores">
+          <div class="stat-icon-wrapper" style="background: linear-gradient(135deg, var(--color-warning), #d97706);">
+            <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+            </svg>
+          </div>
+          <div class="stat-info">
+            <h4>Meilleurs Rangs</h4>
+            <div class="stat-value" id="stats-highscore-sum">0</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live storage and offline files list -->
+      <div class="installed-list-wrapper">
+        <h3 style="margin-bottom: 1.5rem; font-family: var(--font-game);">Fichiers téléchargés dans "Mon Stockage"</h3>
+        <div class="installed-list" id="installed-list-container">
+          <!-- Populated dynamically via JS: either list of downloadable files or clean empty state -->
+          <div style="text-align: center; padding: 3rem; color: var(--color-text-muted);" id="empty-library-msg">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 1rem; opacity: 0.5;">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+            </svg>
+            <p>Aucun jeu n'a encore été téléchargé dans votre stockage local. Téléchargez un jeu ci-dessus pour y accéder instantanément hors-ligne !</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ==========================================
+       OPEN SOURCE INFORMATION ZONE
+       ========================================== -->
+  <section class="opensource-section" id="opensource">
+    <div class="container">
+      <div class="opensource-box">
+        <span class="gradient-text" style="font-weight: 800; text-transform: uppercase; letter-spacing: 2px;">Révolution du Libre</span>
+        <h2 style="margin-top: 0.5rem;">Plateforme 100% Collaborative &amp; Libre</h2>
+        <p>RetroForge Arcade est un projet entièrement ouvert et collaboratif. Le code source entier de l'interface, des feuilles de styles et des moteurs de jeux est sous licence MIT. Forkez-nous sur GitHub, modifiez les jeux et ajoutez les vôtres !</p>
+        
+        <div class="git-stats">
+          <div>
+            <div class="git-stat-val" id="git-stars-count">1.4k</div>
+            <div class="git-stat-lbl">Stars</div>
+          </div>
+          <div>
+            <div class="git-stat-val" id="git-forks-count">348</div>
+            <div class="git-stat-lbl">Forks</div>
+          </div>
+          <div>
+            <div class="git-stat-val" id="git-license-type">MIT</div>
+            <div class="git-stat-lbl">Licence</div>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+          <a href="https://github.com" target="_blank" class="btn btn-primary" id="btn-github-link">
+            <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+            </svg>
+            Forkez sur GitHub
+          </a>
+          <button class="btn btn-secondary" id="btn-submit-review" onclick="alert('Merci pour votre intérêt ! En tant que projet local autonome, les contributions se font via la création de Pull Requests sur la branche principale.')">
+            Contribuer
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================
+       FOOTER
+       ========================================== -->
+  <footer class="footer">
+    <div class="container footer-container">
+      <div class="footer-copy">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="vertical-align: middle;">
+          <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="var(--color-primary)"/>
+        </svg>
+        <span>&copy; 2026 RetroForge Arcade. Plateforme de jeux Libre distribuée sous licence MIT.</span>
+      </div>
+
+      <div class="footer-links">
+        <a href="#games-gallery" class="footer-link">Jeux</a>
+        <a href="#library-dashboard" class="footer-link">Mon Stockage</a>
+        <a href="#opensource" class="footer-link">Développeurs</a>
+        <a href="https://github.com" target="_blank" class="footer-link">GitHub</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Link to interactive logic engine JS -->
+  <script src="f3.js"></script>
+</body>
+</html>
